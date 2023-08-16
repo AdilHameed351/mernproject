@@ -22,8 +22,6 @@ app.set("view engine", "hbs");
 app.set("views", template_path);
 hbs.registerPartials(partials_path);
 
-const DB = "mongodb+srv://username:123123123@cluster0.v9eosf0.mongodb.net/mernstack?retryWrites=true&w=majority"
-
 app.get("/", (req, res) => {
     res.render("index");
 });

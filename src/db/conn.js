@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-mongoose.connect("mongodb+srv://username:123123123@cluster0.v9eosf0.mongodb.net/mernstack?retryWrites=true&w=majority", {
+mongoose.connect(`${process.env.DB_CONNECTION}?retryWrites=true&w=majority`, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => {

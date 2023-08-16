@@ -1,9 +1,13 @@
+require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const hbs = require("hbs");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const app = express();
 require("./db/conn");
 const Register = require("./models/registers");
+
 const port = process.env.PORT || 3000;
 
 const static_path = path.join(__dirname, "../public");
@@ -17,6 +21,8 @@ app.use(express.static(static_path));
 app.set("view engine", "hbs");
 app.set("views", template_path);
 hbs.registerPartials(partials_path);
+
+const DB = "mongodb+srv://username:123123123@cluster0.v9eosf0.mongodb.net/mernstack?retryWrites=true&w=majority"
 
 app.get("/", (req, res) => {
     res.render("index");
@@ -45,7 +51,9 @@ app.post("/register", async(req, res) => {
                 age: req.body.age,
                 password: password,
                 confirmpassword: cpassword
-            })
+            });
+
+            const token = await registerEmployee.generateAuthToken();
 
             const registered = await registerEmployee.save();
             res.status(201).render("index");
@@ -64,8 +72,13 @@ app.post("/login", async(req, res) => {
         const password = req.body.password;
 
         const useremail = await Register.findOne({email:email});
+
+        const isMatch = await bcrypt.compare(password, useremail.password);
         
-        if(useremail.password === password) {
+        const token = await useremail.generateAuthToken();
+        console.log(`the token part ${token}`);
+
+        if(isMatch) {
             res.status(201).render("index");
         } else {
             res.send("Invalid Email or Password");
@@ -73,7 +86,28 @@ app.post("/login", async(req, res) => {
     } catch(error) {
         res.status(400).send("Invalid Email or Password");
     }
-})
+});
+
+// const securePassword = async(password) => {
+//     const passwordHash = await bcrypt.hash(password, 10);
+//     console.log(passwordHash);
+
+//     const passwordMatch = await bcrypt.compare(password, passwordHash);
+//     console.log(passwordMatch);
+// }
+
+// securePassword("thapa@123");
+
+// const createToken = async () => {
+//     const token = await jwt.sign({_id: "64da42e43ba9896e1dfe35db"}, "mynameisadilhameedandiamastudentintheuniversity",
+//     {expiresIn: "5 seconds"});
+//     console.log(token);
+
+//     const userVer = jwt.verify(token, "mynameisadilhameedandiamastudentintheuniversity");
+//     console.log(userVer);
+// }
+
+// createToken();
 
 app.listen(port, (req, res) => {
     console.log(`Connection is listening on port no. ${port}`);
